@@ -1,0 +1,15 @@
+Condiciones 
+Si el tipo_pago es "Transferencia"
+  nombre
+  numero_cta
+  Cedulacedula_rif
+  tipo_cuenta
+  banco_asociado
+si el tipo_pago es "Pago Movil"
+  nombre
+  cedula_rif
+  telefono
+  banco_asociado
+si es otro tipo_pago
+   nombre  
+   email   
