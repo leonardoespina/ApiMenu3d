@@ -11,6 +11,10 @@ const Empresa = sequelize.define("Empresa", {
     type: DataTypes.TEXT,
     allowNull: false,
   },
+  logo: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
   telefono: {
     type: DataTypes.STRING,
     allowNull: false,
