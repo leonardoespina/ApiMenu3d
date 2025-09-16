@@ -23,12 +23,14 @@ const storage = multer.diskStorage({
 
 // Filtro de archivos
 const fileFilter = (req, file, cb) => {
-  const allowed = [".glb"];
+  const allowed = [".glb", ".png", ".jpeg", ".jpg"];
   const ext = path.extname(file.originalname).toLowerCase();
   if (allowed.includes(ext)) cb(null, true);
   else
     cb(
-      new Error("Formato de archivo no válido. Solo se permiten archivos .glb"),
+      new Error(
+        "Formato de archivo no válido. Solo se permiten archivos .glb, .png, .jpeg, .jpg"
+      ),
       false
     );
 };

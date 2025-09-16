@@ -19,7 +19,7 @@ app.set("trust proxy", 1);
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Puerto de tu frontend Vue
+    origin: process.env.FRONTEND_URL || "http://localhost:5173/", // Puerto de tu frontend Vue
     credentials: true, // Permite enviar cookies y headers de autenticación
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
