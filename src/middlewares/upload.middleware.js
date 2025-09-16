@@ -1,6 +1,6 @@
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs"); // 👈 Importar fs
+const fs = require("fs");
 
 // Configuración de almacenamiento
 const storage = multer.diskStorage({
@@ -21,20 +21,32 @@ const storage = multer.diskStorage({
   },
 });
 
-// Filtro de archivos
+// Filtro de archivos - ACTUALIZADO
 const fileFilter = (req, file, cb) => {
-  const allowed = [".glb", ".png", ".jpeg", ".jpg"];
+  const allowedExtensions = [".glb", ".png", ".jpg", ".jpeg", ".bmp"];
   const ext = path.extname(file.originalname).toLowerCase();
-  if (allowed.includes(ext)) cb(null, true);
-  else
+
+  if (allowedExtensions.includes(ext)) {
+    cb(null, true);
+  } else {
     cb(
       new Error(
-        "Formato de archivo no válido. Solo se permiten archivos .glb, .png, .jpeg, .jpg"
+        `Formato de archivo no válido. Solo se permiten: ${allowedExtensions.join(
+          ", "
+        )}`
       ),
       false
     );
+  }
 };
 
-const upload = multer({ storage, fileFilter });
+// Configuración de multer
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // Límite de 10MB (ajustable según necesidades)
+  },
+});
 
 module.exports = upload;
