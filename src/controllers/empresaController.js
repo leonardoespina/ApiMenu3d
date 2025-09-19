@@ -4,7 +4,15 @@ const fs = require("fs").promises;
 const path = require("path");
 
 const getEmpresas = async (req, res) => {
+  //console.log("Query parameters:", req);
   try {
+    const empresa = await Empresa.findAll({ where: { status: true } });
+
+    res.json(empresa);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener empresa" });
+  }
+  /*try {
     const data = await paginateAndSearch(
       Empresa,
       req.query,
@@ -17,7 +25,7 @@ const getEmpresas = async (req, res) => {
   } catch (error) {
     console.error("Error al obtener datos de la empresa:", error);
     res.status(500).json({ error: "Error al obtener datos de la empresa." });
-  }
+  }*/
 };
 
 const getEmpresaById = async (req, res) => {

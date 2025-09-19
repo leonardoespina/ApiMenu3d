@@ -12,17 +12,35 @@ const pedidoRoutes = require("./routes/pedido.routes");
 const empresaRoutes = require("./routes/empresa.routes");
 const bancoRoutes = require("./routes/bancoRoutes");
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://192.168.1.108:5173",
+  // Agrega otros dominios si es necesario
+];
+
 const app = express();
 
 app.set("trust proxy", 1);
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // ⚠️ Esto es importante
+  })
+);
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173/", // Puerto de tu frontend Vue
-    credentials: true, // Permite enviar cookies y headers de autenticación
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    origin: function (origin, callback) {
+      // Permitir requests sin origin (como apps móviles o Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
   })
 );
 app.use(json());

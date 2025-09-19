@@ -1,12 +1,22 @@
-const { Pedido, PedidoPlato, Plato, Usuario, Banco } = require("../models");
+const {
+  Pedido,
+  PedidoPlato,
+  Plato,
+  Usuario,
+  Banco,
+  Empresa,
+} = require("../models");
 const sequelize = require("../config/database");
 const { paginateAndSearch } = require("../utils/paginationHelper");
 
 const requiereLogin = false;
-
 const ESTADOS_VALIDOS = ["pendiente", "en_proceso", "entregado", "cancelado"];
 
-const generarMensajeWhatsApp = (pedido, platos) => {
+const generarMensajeWhatsApp = async (pedido, platos) => {
+  // Obtener datos de la empresa
+  const empresa = await Empresa.findOne({ where: { status: true } });
+  const telefonoEmpresa = empresa ? empresa.telefono : null;
+
   let mensaje = `🧾 *NUEVO PEDIDO* 🧾\n\n`;
   mensaje += `👤 *Cliente:* ${pedido.nombreCliente}\n`;
   mensaje += `📞 *Teléfono:* ${pedido.telefono}\n`;
@@ -18,12 +28,10 @@ const generarMensajeWhatsApp = (pedido, platos) => {
 
   mensaje += `💳 *Método de pago:* ${pedido.metodoPago}\n`;
 
-  // Información de referencia de pago si existe
   if (pedido.referenciaPago) {
     mensaje += `🔢 *Referencia de pago:* ${pedido.referenciaPago}\n`;
   }
 
-  // Información del banco si existe
   if (pedido.Banco) {
     mensaje += `🏦 *Banco:* ${pedido.Banco.nombre}\n`;
     mensaje += `📋 *Cuenta:* ${pedido.Banco.tipo_cuenta} - ${pedido.Banco.cedula_rif}\n`;
@@ -50,7 +58,10 @@ const generarMensajeWhatsApp = (pedido, platos) => {
   mensaje += `⏰ *Hora del pedido:* ${new Date().toLocaleString()}\n`;
   mensaje += `🆔 *Nº de pedido:* ${pedido.id}`;
 
-  return mensaje;
+  return {
+    mensaje,
+    telefonoEmpresa,
+  };
 };
 
 exports.crearPedido = async (req, res) => {
@@ -65,15 +76,14 @@ exports.crearPedido = async (req, res) => {
       telefono,
       direccion,
       metodoPago,
-      cedulaIdentidad, // Nuevo campo
-      referenciaPago, // Nuevo campo
-      bancoId, // Nuevo campo
+      cedulaIdentidad,
+      referenciaPago,
+      bancoId,
       observaciones,
       total,
       platos = [],
     } = req.body;
 
-    // Validar referencia para métodos electrónicos
     if (
       ["transferencia", "pago_movil", "pago móvil"].includes(
         metodoPago?.toLowerCase()
@@ -98,7 +108,7 @@ exports.crearPedido = async (req, res) => {
         telefono,
         direccion,
         metodoPago,
-        cedulaIdentidad, // Nuevo campo
+        cedulaIdentidad,
         referenciaPago,
         bancoId,
         observaciones,
@@ -139,15 +149,24 @@ exports.crearPedido = async (req, res) => {
       ],
     });
 
-    const mensaje = generarMensajeWhatsApp(
+    const { mensaje, telefonoEmpresa } = await generarMensajeWhatsApp(
       pedidoConPlatos,
       pedidoConPlatos.Platos
     );
 
+    // Crear URL de WhatsApp con el número de la empresa si está disponible
+    const numeroWhatsApp = telefonoEmpresa
+      ? telefonoEmpresa.replace(/\D/g, "")
+      : "";
+    const whatsappUrl = numeroWhatsApp
+      ? `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`
+      : `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
     return res.status(201).json({
       pedido: pedidoConPlatos,
       mensajeWhatsApp: encodeURIComponent(mensaje),
-      whatsappUrl: `https://wa.me/?text=${encodeURIComponent(mensaje)}`,
+      whatsappUrl,
+      telefonoEmpresa,
     });
   } catch (error) {
     if (!t.finished) await t.rollback();
