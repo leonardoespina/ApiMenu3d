@@ -4,7 +4,7 @@ const Usuario = require("./models/Usuario");
 const syncDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log("✅ Conexión a MySQL exitosa.");
+    console.log("✅ Conexión a Supabase exitosa.");
     await sequelize.sync({ alter: true }); // o { force: true } si quieres borrar y crear
     console.log("🛠️ Base de datos sincronizada.");
   } catch (error) {
