@@ -64,7 +64,7 @@ app.use("/api/bancos", bancoRoutes);
 
 // Añade esta línea a tus rutas
 app.use("/api/platos", platoRoutes);
-app.use("/uploads", express.static("uploads")); // para servir imágenes
+//app.use("/uploads", express.static("uploads")); // para servir imágenes
 
 app.get("/", (req, res) => {
   res.send("API del Restaurante funcionando 🍽️");

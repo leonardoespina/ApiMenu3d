@@ -2,6 +2,42 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+// Configuración de almacenamiento en memoria (no guardamos en disco local)
+const storage = multer.memoryStorage();
+
+// Filtro de archivos
+const fileFilter = (req, file, cb) => {
+  const allowedExtensions = [".glb", ".png", ".jpg", ".jpeg", ".bmp"];
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  if (allowedExtensions.includes(ext)) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error(
+        `Formato de archivo no válido. Solo se permiten: ${allowedExtensions.join(
+          ", "
+        )}`
+      ),
+      false
+    );
+  }
+};
+
+// Configuración de multer
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // Límite de 10MB
+  },
+});
+
+module.exports = upload;
+/*const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
 // Configuración de almacenamiento
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -49,4 +85,4 @@ const upload = multer({
   },
 });
 
-module.exports = upload;
+module.exports = upload;*/

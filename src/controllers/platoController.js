@@ -1,7 +1,6 @@
 const { Plato, Categoria } = require("../models");
 const { paginateAndSearch } = require("../utils/paginationHelper");
-const fs = require("fs").promises;
-const path = require("path");
+const storageService = require("../services/storageService");
 
 const getPlatoById = async (req, res) => {
   try {
@@ -22,33 +21,6 @@ const getPlatoById = async (req, res) => {
   }
 };
 
-/*const getPlatos = async (req, res) => {
-  console.log("Obteniendo platos con parámetros:", req.query);
-  try {
-    const { category, search } = req.query;
-
-    // Configuración de la inclusión de modelos y filtros
-    let includeOptions = [{ model: Categoria, attributes: ["nombre"] }];
-    if (category) {
-      includeOptions[0].where = { nombre: category };
-      includeOptions[0].required = true; // Esto asegura que se realice un INNER JOIN
-    }
-
-    const data = await paginateAndSearch(
-      Plato,
-      req.query,
-      ["nombre", "descripcion"],
-      {
-        where: { status: true },
-        include: includeOptions,
-      }
-    );
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error al obtener los platos." });
-  }
-};*/
 const getPlatos = async (req, res) => {
   console.log("Obteniendo platos con parámetros:", req.query);
   try {
@@ -101,7 +73,144 @@ const getPlatos = async (req, res) => {
   }
 };
 
-/*const getPlatoById = async (req, res) => {
+const createPlato = async (req, res) => {
+  try {
+    const { nombre, descripcion, precio, categoriaId } = req.body;
+
+    console.log("Datos del plato:", {
+      nombre,
+      descripcion,
+      precio,
+      categoriaId,
+    });
+
+    if (!nombre || !precio || !categoriaId) {
+      return res.status(400).json({ error: "Campos obligatorios faltantes." });
+    }
+
+    let imagenData = null;
+
+    // Subir imagen a Supabase si existe
+    if (req.file) {
+      const fileName = storageService.generateUniqueFileName(
+        req.file.originalname
+      );
+      imagenData = await storageService.uploadFile(req.file, fileName);
+    }
+
+    const plato = await Plato.create({
+      nombre,
+      descripcion,
+      precio,
+      categoriaId,
+      imagen: imagenData ? imagenData.fileName : null,
+      // createdBy: req.usuario.id,
+    });
+
+    // Enviar una respuesta con un mensaje de éxito
+    res.status(201).json({
+      message: "Plato creado exitosamente.",
+      ...plato.toJSON(),
+    });
+  } catch (error) {
+    console.error("Error al crear el plato:", error);
+    res.status(500).json({ error: "Error al crear el plato." });
+  }
+};
+
+const updatePlato = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, descripcion, precio, categoriaId } = req.body;
+
+    const plato = await Plato.findByPk(id);
+    if (!plato || !plato.status) {
+      return res.status(404).json({ error: "Plato no encontrado." });
+    }
+
+    const oldImagen = plato.imagen;
+    let newImagen = plato.imagen;
+
+    // Subir nueva imagen a Supabase si existe
+    if (req.file) {
+      const fileName = storageService.generateUniqueFileName(
+        req.file.originalname
+      );
+      const imagenData = await storageService.uploadFile(req.file, fileName);
+      newImagen = imagenData.fileName;
+
+      // Eliminar imagen antigua de Supabase
+      if (oldImagen) {
+        await storageService.deleteFile(oldImagen);
+      }
+    }
+
+    // Actualizar el plato en la base de datos
+    await plato.update({
+      nombre,
+      descripcion,
+      precio,
+      categoriaId,
+      imagen: newImagen,
+      // updatedBy: req.usuario.id,
+    });
+
+    res.json(plato);
+  } catch (error) {
+    console.error("Error al actualizar el plato:", error);
+    res.status(500).json({ error: "Error al actualizar el plato." });
+  }
+};
+
+const deletePlato = async (req, res) => {
+  console.log("Eliminando plato con ID:", req.params.id);
+  try {
+    const plato = await Plato.findByPk(req.params.id);
+    if (!plato || !plato.status) {
+      return res.status(404).json({ error: "Plato no encontrado." });
+    }
+
+    const deletedBy = req.user ? req.user.id : null;
+    if (!deletedBy) {
+      return res.status(401).json({
+        error: "No se pudo identificar al usuario para la operación.",
+      });
+    }
+
+    const imagenParaEliminar = plato.imagen;
+
+    // Actualizar el plato a status: false (borrado lógico)
+    await plato.update({
+      status: false,
+      deletedAt: new Date(),
+      deletedBy: deletedBy,
+    });
+
+    // Eliminar imagen de Supabase Storage si existe
+    if (imagenParaEliminar) {
+      await storageService.deleteFile(imagenParaEliminar);
+    }
+
+    res.json({ message: "Plato eliminado correctamente." });
+  } catch (error) {
+    console.error("Error detallado al eliminar el plato:", error);
+    res.status(500).json({ error: "Error al eliminar el plato." });
+  }
+};
+
+module.exports = {
+  getPlatos,
+  createPlato,
+  updatePlato,
+  deletePlato,
+  getPlatoById,
+};
+/*const { Plato, Categoria } = require("../models");
+const { paginateAndSearch } = require("../utils/paginationHelper");
+const fs = require("fs").promises;
+const path = require("path");
+
+const getPlatoById = async (req, res) => {
   try {
     const { id } = req.params;
     const plato = await Plato.findOne({
@@ -120,14 +229,24 @@ const getPlatos = async (req, res) => {
   }
 };
 
+ 
 const getPlatos = async (req, res) => {
   console.log("Obteniendo platos con parámetros:", req.query);
   try {
     const { category, search } = req.query;
-    let where = { status: true };
 
-    if (category) {
-      where["$Categoria.nombre$"] = category;
+    let where = { status: true };
+    let includeOptions = [
+      {
+        model: Categoria,
+        attributes: ["id", "nombre"],
+        required: false,
+      },
+    ];
+
+    if (category && category !== "All") {
+      where.categoriaId = category;
+      includeOptions[0].required = true;
     }
 
     const data = await paginateAndSearch(
@@ -136,45 +255,34 @@ const getPlatos = async (req, res) => {
       ["nombre", "descripcion"],
       {
         where: where,
-        include: [{ model: Categoria, attributes: ["nombre"] }],
+        include: includeOptions,
       }
     );
-    res.json(data);
+
+    // Transformar la respuesta después de obtener los datos
+    const transformedData = {
+      ...data,
+      data: data.data.map((plato) => {
+        const platoJson = plato.toJSON ? plato.toJSON() : plato;
+        const { Categorium, ...rest } = platoJson;
+
+        return {
+          ...rest,
+          categoriaId: Categorium?.id,
+          categoriaNombre: Categorium?.nombre,
+        };
+      }),
+    };
+
+    console.log("Platos encontrados:", transformedData.data.length);
+    res.json(transformedData);
   } catch (error) {
-    console.error(error);
+    console.error("Error en getPlatos:", error);
     res.status(500).json({ error: "Error al obtener los platos." });
   }
-};*/
+};
 
-/*const createPlato = async (req, res) => {
-  try {
-    const { nombre, descripcion, precio, categoriaId } = req.body;
-
-    console.log("Datos del plato:", {
-      nombre,
-      descripcion,
-      precio,
-      categoriaId,
-    });
-
-    if (!nombre || !precio || !categoriaId)
-      return res.status(400).json({ error: "Campos obligatorios faltantes." });
-
-    const plato = await Plato.create({
-      nombre,
-      descripcion,
-      precio,
-      categoriaId,
-      imagen: req.file ? req.file.filename : null,
-      //createdBy: req.usuario.id,
-    });
-
-    res.status(201).json(plato);
-  } catch (error) {
-    console.error("Error al crear el plato:", error);
-    res.status(500).json({ error: "Error al crear el plato." });
-  }
-};*/
+ 
 const createPlato = async (req, res) => {
   try {
     const { nombre, descripcion, precio, categoriaId } = req.body;
@@ -345,4 +453,4 @@ module.exports = {
   updatePlato,
   deletePlato,
   getPlatoById,
-};
+};*/
