@@ -13,7 +13,7 @@ const Banco = sequelize.define("Banco", {
     allowNull: false,
   },
   tipo_cuenta: {
-    type: DataTypes.ENUM("Ahorro", "Corriente", ""),
+    type: DataTypes.ENUM("ahorro", "corriente", ""),
     allowNull: true,
   },
   cedula_rif: {
