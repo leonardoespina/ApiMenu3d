@@ -2,12 +2,18 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
 const Banco = sequelize.define("Banco", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+    allowNull: false,
+  },
   nombre: {
     type: DataTypes.STRING,
     allowNull: false,
   },
   tipo_cuenta: {
-    type: DataTypes.ENUM("Ahorro", "Corriente"),
+    type: DataTypes.ENUM("Ahorro", "Corriente", ""),
     allowNull: true,
   },
   cedula_rif: {
@@ -27,10 +33,6 @@ const Banco = sequelize.define("Banco", {
     allowNull: false,
   },
   telefono: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  email: {
     type: DataTypes.STRING,
     allowNull: true,
   },

@@ -16,8 +16,6 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://192.168.1.108:5173",
   "https://menu3d-five.vercel.app",
-
-  // Agrega otros dominios si es necesario
 ];
 
 const app = express();

@@ -27,47 +27,55 @@ exports.getBancoById = async (req, res) => {
 };
 
 exports.createBanco = async (req, res) => {
-  console.log(req.body.tipo_pago);
   try {
     const { body } = req;
 
+    // Crear una copia del body sin el campo id
+    const bodySinId = { ...body };
+    delete bodySinId.id; // Eliminar el campo id si existe
+
     // Validaciones
-    if (!body.nombre || !body.tipo_pago) {
+    if (!bodySinId.nombre || !bodySinId.tipo_pago) {
       return res
         .status(400)
         .json({ error: "Nombre y tipo de pago son obligatorios" });
     }
 
-    if (body.tipo_pago === "transferencia") {
+    if (bodySinId.tipo_pago === "transferencia") {
       if (
-        !body.numero_cta ||
-        !body.cedula_asociada ||
-        !body.tipo_cuenta ||
-        !body.banco_asociado
+        !bodySinId.numero_cta ||
+        !bodySinId.cedula_asociada ||
+        !bodySinId.tipo_cuenta ||
+        !bodySinId.banco_asociado
       ) {
         return res.status(400).json({
           error:
             "Para Transferencia, se requieren todos los campos específicos",
         });
       }
-    } else if (body.tipo_pago === "pago_movil") {
-      if (!body.cedula_asociada || !body.telefono || !body.banco_asociado) {
+    } else if (bodySinId.tipo_pago === "pago_movil") {
+      if (
+        !bodySinId.cedula_asociada ||
+        !bodySinId.telefono ||
+        !bodySinId.banco_asociado
+      ) {
         return res.status(400).json({
           error: "Para Pago Movil, se requieren todos los campos específicos",
         });
       }
     } else {
       // Otro tipo de pago
-      if (!body.email) {
+      if (!bodySinId.email) {
         return res
           .status(400)
           .json({ error: "Para este tipo de pago, se requiere un email" });
       }
     }
 
-    const banco = await Banco.create(body);
+    const banco = await Banco.create(bodySinId); // Usar bodySinId en lugar de body
     res.status(201).json(banco);
   } catch (err) {
+    console.log(err);
     if (err.name === "SequelizeValidationError") {
       const errors = err.errors.map((error) => error.message);
       return res.status(400).json({ error: errors });
