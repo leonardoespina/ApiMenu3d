@@ -8,7 +8,7 @@ const PedidoPlato = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "pedidos",
+        model: "Pedidos",
         key: "id",
       },
     },
@@ -16,7 +16,7 @@ const PedidoPlato = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "platos",
+        model: "Platos",
         key: "id",
       },
     },
@@ -30,7 +30,7 @@ const PedidoPlato = sequelize.define(
     },
   },
   {
-    tableName: "pedido_plato",
+    tableName: "Pedido_plato",
     timestamps: false,
   }
 );

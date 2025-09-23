@@ -65,6 +65,7 @@ const generarMensajeWhatsApp = async (pedido, platos) => {
 };
 
 exports.crearPedido = async (req, res) => {
+  console.log(req.body);
   const t = await sequelize.transaction();
   try {
     if (requiereLogin && !req.user?.id) {
@@ -84,15 +85,24 @@ exports.crearPedido = async (req, res) => {
       platos = [],
     } = req.body;
 
+    // CORRECCIÓN: Solo transferencia y pago_movil requieren referencia
     if (
-      ["transferencia", "pago_movil", "pago móvil"].includes(
-        metodoPago?.toLowerCase()
-      ) &&
+      ["transferencia", "pago_movil"].includes(metodoPago?.toLowerCase()) &&
       !referenciaPago
     ) {
       return res.status(400).json({
         error:
           "Debes proporcionar un número de referencia para este método de pago.",
+      });
+    }
+
+    // CORRECCIÓN: Validar bancoId para métodos que lo requieren
+    if (
+      ["transferencia", "pago_movil"].includes(metodoPago?.toLowerCase()) &&
+      !bancoId
+    ) {
+      return res.status(400).json({
+        error: "Debes seleccionar un banco para este método de pago.",
       });
     }
 
@@ -109,8 +119,8 @@ exports.crearPedido = async (req, res) => {
         direccion,
         metodoPago,
         cedulaIdentidad,
-        referenciaPago,
-        bancoId,
+        referenciaPago: referenciaPago || null, // Asegurar null si está vacío
+        bancoId: bancoId || null, // Asegurar null si no hay banco
         observaciones,
         total,
         usuarioId: req.user?.id || null,
@@ -154,7 +164,6 @@ exports.crearPedido = async (req, res) => {
       pedidoConPlatos.Platos
     );
 
-    // Crear URL de WhatsApp con el número de la empresa si está disponible
     const numeroWhatsApp = telefonoEmpresa
       ? telefonoEmpresa.replace(/\D/g, "")
       : "";
@@ -205,7 +214,7 @@ exports.obtenerPedidos = async (req, res) => {
 
     return res.json(paginatedResult);
   } catch (error) {
-    console.error("Error al obtener pedidos:", error);
+    console.log("Error al obtener pedidos:", error);
     return res.status(500).json({ error: "Error al obtener pedidos." });
   }
 };

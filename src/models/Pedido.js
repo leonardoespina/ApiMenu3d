@@ -21,7 +21,14 @@ const Pedido = sequelize.define(
       allowNull: true,
     },
     metodoPago: {
-      type: DataTypes.ENUM("efectivo", "transferencia", "pago_movil"),
+      type: DataTypes.ENUM(
+        "efectivo",
+        "transferencia",
+        "pago_movil",
+        "zelle",
+        "bitcoin",
+        "criptomoneda"
+      ),
       allowNull: false,
     },
     observaciones: {
@@ -40,7 +47,7 @@ const Pedido = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: "bancos",
+        model: "Bancos",
         key: "id",
       },
     },
@@ -52,13 +59,13 @@ const Pedido = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true, // o false si quieres forzar que solo usuarios logueados hagan pedidos
       references: {
-        model: "usuarios",
+        model: "Usuarios",
         key: "id",
       },
     },
   },
   {
-    tableName: "pedidos",
+    tableName: "Pedidos",
   }
 );
 

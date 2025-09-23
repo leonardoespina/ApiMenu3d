@@ -1,12 +1,13 @@
 // src/models/index.js
 const Usuario = require("./Usuario");
+const Empresa = require("./Empresa");
 const Categoria = require("./Categoria");
 const Plato = require("./Plato");
-const Pedido = require("./Pedido");
-const PedidoPlato = require("./PedidoPlato");
-
-const Empresa = require("./Empresa");
 const Banco = require("./Banco");
+const PedidoPlato = require("./PedidoPlato");
+const Pedido = require("./Pedido");
+
+//const Empresa = require("./Empresa");
 
 // Relaciones
 Categoria.hasMany(Plato, { foreignKey: "categoriaId" });
@@ -29,11 +30,10 @@ Plato.belongsToMany(Pedido, {
 
 module.exports = {
   Usuario,
+  Empresa,
+  Banco,
   Categoria,
   Plato,
   Pedido,
   PedidoPlato,
-
-  Empresa,
-  Banco,
 };
