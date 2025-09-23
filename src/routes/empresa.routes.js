@@ -15,14 +15,14 @@ router.post(
   "/",
   authenticateToken,
   permit("admin", "superadmin"),
-  upload.single("logo"),
+  upload.single("imagen"),
   empresaController.createEmpresa
 );
 router.put(
   "/:id",
   authenticateToken,
   permit("admin", "superadmin"),
-  upload.single("logo"),
+  upload.single("imagen"),
   empresaController.updateEmpresa
 );
 router.delete(

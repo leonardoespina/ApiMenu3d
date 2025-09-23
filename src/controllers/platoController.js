@@ -77,13 +77,6 @@ const createPlato = async (req, res) => {
   try {
     const { nombre, descripcion, precio, categoriaId } = req.body;
 
-    console.log("Datos del plato:", {
-      nombre,
-      descripcion,
-      precio,
-      categoriaId,
-    });
-
     if (!nombre || !precio || !categoriaId) {
       return res.status(400).json({ error: "Campos obligatorios faltantes." });
     }
@@ -113,7 +106,11 @@ const createPlato = async (req, res) => {
       ...plato.toJSON(),
     });
   } catch (error) {
-    console.error("Error al crear el plato:", error);
+    console.error("--- ERROR DETALLADO AL CREAR PLATO ---");
+    console.error("Mensaje:", error.message);
+    console.error("Nombre:", error.name);
+    console.error("Stack:", error.stack);
+    console.error("--- FIN DEL ERROR ---");
     res.status(500).json({ error: "Error al crear el plato." });
   }
 };
@@ -157,7 +154,11 @@ const updatePlato = async (req, res) => {
 
     res.json(plato);
   } catch (error) {
-    console.error("Error al actualizar el plato:", error);
+    console.error("--- ERROR DETALLADO AL ACTUALIZAR PLATO ---");
+    console.error("Mensaje:", error.message);
+    console.error("Nombre:", error.name);
+    console.error("Stack:", error.stack);
+    console.error("--- FIN DEL ERROR ---");
     res.status(500).json({ error: "Error al actualizar el plato." });
   }
 };

@@ -11,7 +11,7 @@ const Empresa = sequelize.define("Empresa", {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-  logo: {
+  imagen: {
     type: DataTypes.STRING,
     allowNull: false,
   },

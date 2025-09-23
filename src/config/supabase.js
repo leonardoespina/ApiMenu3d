@@ -1,3 +1,4 @@
+// supabase.js
 const { createClient } = require("@supabase/supabase-js");
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -10,5 +11,11 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Verificar conexión (opcional)
+supabase.storage
+  .getBucket("uploads")
+  .then(() => console.log("✅ Conexión a Supabase Storage verificada"))
+  .catch((err) => console.error("❌ Error conectando a Supabase:", err));
 
 module.exports = supabase;
