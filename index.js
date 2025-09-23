@@ -1,6 +1,7 @@
 require("dotenv").config();
 const app = require("./src/app");
 const sequelize = require("./src/config/database");
+const { initializeWhatsApp } = require("./src/services/whatsappService");
 
 const http = require("http");
 const { Server } = require("socket.io");
@@ -35,6 +36,7 @@ sequelize
   .sync({ alter: false })
   .then(() => {
     console.log("✅ Base de datos sincronizada");
+    initializeWhatsApp();
     server.listen(PORT, () => {
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     });
